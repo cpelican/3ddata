@@ -1,7 +1,20 @@
-import { MeshBasicMaterialProps, ThreeElements } from '@react-three/fiber';
+import {
+    MeshBasicMaterialProps,
+    ThreeElements,
+    ThreeEvent,
+} from '@react-three/fiber';
 import React, { useLayoutEffect } from 'react';
 import { BufferGeometry, DoubleSide, Vector3 } from 'three';
-import { TriangleConf } from './app-body';
+
+export type TriangleConf = {
+    A: number[];
+    B: number[];
+    C: number[];
+    color: string;
+    onHover: (
+        triangle: Pick<TriangleConf, 'A' | 'B' | 'C' | 'color'> | {}
+    ) => void;
+};
 
 type TriangleProps = TriangleConf &
     ThreeElements['mesh'] &
@@ -19,8 +32,25 @@ export const Triangle = ({ color, rotateX, ...props }: TriangleProps) => {
             ]);
         }
     }, [props.A, props.B, props.C]);
+
     return (
-        <mesh scale={[0.5, 0.5, 0.5]} position={[0, 0, 0]}>
+        <mesh
+            onPointerEnter={(el) => {
+                el.stopPropagation();
+                props?.onHover?.({
+                    A: props.A,
+                    B: props.B,
+                    C: props.C,
+                    color,
+                });
+            }}
+            onPointerLeave={(el) => {
+                el.stopPropagation();
+                props.onHover({});
+            }}
+            scale={[0.5, 0.5, 0.5]}
+            position={[0, 0, 0]}
+        >
             <bufferGeometry attach="geometry" ref={triangleRef} />
             <meshBasicMaterial side={DoubleSide} color={color} />
         </mesh>
